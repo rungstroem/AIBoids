@@ -18,7 +18,7 @@ class Boid():
         avgVel = Vector(*np.zeros(2));
         for boid in boids:
             dist = np.sqrt((boid.velocity.x-self.velocity.x)**2 + (boid.velocity.y-self.velocity.y)**2);
-            if(dist > self.perseption):
+            if(dist < self.perseption):
                 total +=1;
                 avgVel += boid.velocity;
         if(total > 0):
@@ -26,18 +26,14 @@ class Boid():
             avgVel.y /= total;
             # Get direction of avgVel vector - ie. unitVector
             avgVecSize = np.sqrt(avgVel.x**2+avgVel.y**2);
-            avgVec.x /= avgVecSize * self.maxSpeed;
-            avgVec.y /= avgVecSize * self.maxSpeed;
+            avgVel.x /= avgVecSize * self.maxSpeed;
+            avgVel.y /= avgVecSize * self.maxSpeed;
             steering = avgVel - self.velocity;
             
         return steering;
 
     def cohesion():
-        steering = Vector(*np.zeros(2));
-        total = 0;
-        cMass = Vector(*np.zeros(2));
-        for boid in boids:
-
+        i = 0;
 
     def separation():
         j = 0;

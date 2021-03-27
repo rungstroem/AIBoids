@@ -1,6 +1,6 @@
 from p5 import setup, draw, size, background, run
 import numpy as np
-from boid import Boid
+from boid3 import Boid
 
 width = 400;
 height = 200;
