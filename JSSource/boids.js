@@ -2,7 +2,7 @@ let width = 400;
 let height = 400;
 
 let numBoids = 30;
-let perception = 50;
+let perception = 10;
 let maxVel = 2;
 let maxAcc = 0.01;
 
@@ -22,7 +22,7 @@ class Boid{
 
 function init(){
 	for(let i = 0; i<numBoids; i++){
-		flock.push(new Boid(Math.random()*width, Math.random()*height, Math.random()*1-0.5, Math.random()*1-0.5, Math.random()*0.5-0.25, Math.random()*0.5-0.25), Math.random()*100);
+		flock.push(new Boid(Math.random()*width, Math.random()*height, Math.random()*1-0.5, Math.random()*1-0.5, Math.random()*0.5-0.25, Math.random()*0.5-0.25), Math.random()*10);
 	}
 }
 
@@ -47,10 +47,10 @@ function edges(boid){
 }
 
 function updateBlink(boid){
-	boid.blinkCount++;
-	if(boid.blinkCount >100){
+	if(boid.blinkCount > 100){
 		boid.blinkCount = 0;
 	}
+	boid.blinkCount++;
 }
 
 function updateVel(boid){
@@ -69,12 +69,32 @@ function updateVel(boid){
 	boid.vy += boid.ay;
 }
 
+function seperation(boid){
+	let deltaX = 0;
+	let deltaY = 0;
+	for(let boids of flock){
+		if(boid !== boids){
+			if(dist(boid, boids) < perception){
+				deltaX += boid.x-boids.x;
+				deltaY += boid.y-boids.y;
+			}
+		}
+	}
+	boid.vx += deltaX*0.05;
+	boid.vy += deltaY*0.05;
+}
+
 function boidDraw(ctx, boid){
 	ctx.beginPath();
 	ctx.arc(boid.x, boid.y, 5, 0, 2*Math.PI, false);
+	ctx.lineWidth = 3;
 	ctx.strokeStyle = "#FF0000";
 	ctx.stroke();
-	//ctx.fillStyle = "#4B0082";
+	//if(boid.blinkCount > 90){
+	//	ctx.fillStyle = "#0000FF";
+	//}else{
+	//	ctx.fillStyle = "#000000";
+	//}
 	//ctx.fill();
 }
 
@@ -83,7 +103,7 @@ function gameLoop(){
 	ctx.clearRect(0,0,width,height);
 	for(let boid of flock){
 		updateVel(boid);
-		updateBlink(boid);
+		seperation(boid);
 		edges(boid);
 		boidDraw(ctx,boid);
 	}
