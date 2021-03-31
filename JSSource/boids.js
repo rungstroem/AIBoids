@@ -1,10 +1,10 @@
-let width = 400;
-let height = 400;
+let width = 800;
+let height = 800;
 
 let numBoids = 30;
 let perception = 20;
-let maxVel = 2;
-let maxAcc = 0.1;
+let maxVel = 5;
+let maxAcc = 0.05;
 
 var flock = [];
 
@@ -18,12 +18,12 @@ class Boid{
 		this.ay = ay;
 		this.blinkCount = bc;	// Problem is with random initialization...
 	}
-	updateBlink(){
-		if(blinkCount > 99){
-			this.blinkCount = 0;
-		}
-		this.blinkCount++;
-	}
+	//updateBlink(){
+	//	if(this.blinkCount > 99){
+	//		this.blinkCount = 0;
+	//	}
+	//	this.blinkCount++;
+	//}
 };
 
 function init(){
@@ -53,42 +53,46 @@ function edges(boid){
 }
 
 function boundingBox(boid){
-	let xMin = 0+10;
-	let xMax = width-10;
-	let yMin = 0+10;
-	let yMax = height-10;
+	let xMin = 0+20;
+	let xMax = width-20;
+	let yMin = 0+20;
+	let yMax = height-20;
 	if(boid.x < xMin){
-		boid.vx = maxVel;
+		boid.vx += 1;
 	}
 	if(boid.x > xMax){
-		boid.vx = -maxVel;
+		boid.vx += -1;
 	}
 	if(boid.y < yMin){
-		boid.vy = maxVel;
+		boid.vy += 1;
 	}
 	if(boid.y > yMax){
-		boid.vy = -maxVel;
+		boid.vy += -1;
 	}
 	
 }
 
-/*function updateBlink(boid){
-	if(boid.blinkCount > 100){
-		boid.blinkCount = 0;
-	}
-	boid.blinkCount++;
-}*/
-
 function updateVel(boid){
-	
-	if(boid.vx > maxVel) boid.vx = maxVel;
-	if(boid.vy > maxVel) boid.vy = maxVel;
-	if(boid.vx < -maxVel) boid.vx = -maxVel;
-	if(boid.vy < -maxVel) boid.vy = -maxVel;
 	if(boid.ax > maxAcc) boid.ax = maxAcc;
 	if(boid.ay > maxAcc) boid.ay = maxAcc;
 	if(boid.ax < -maxAcc) boid.ax = -maxAcc;
 	if(boid.ay < -maxAcc) boid.ay = -maxAcc;
+	if(boid.vx > maxVel){
+		boid.vx = maxVel;
+		boid.ax = 0;
+	}
+	if(boid.vy > maxVel){
+		boid.vy = maxVel;
+		boid.ay = 0;
+	}
+	if(boid.vx < -maxVel){
+		boid.vx = -maxVel;
+		boid.ax = 0;
+	}
+	if(boid.vy < -maxVel){
+		boid.vy = -maxVel;
+		boid.ay = 0;
+	}
 	
 	boid.x += boid.vx;
 	boid.y += boid.vy;
@@ -99,37 +103,51 @@ function updateVel(boid){
 function billiardBallBehavior(boid){
 	let deltaX = 0;
 	let deltaY = 0;
+	let count = 0
+	let scaling = 0.05;
 	for(let boids of flock){
 		if(boid !== boids){
 			if(dist(boid, boids) < perception){
 				deltaX += boid.x-boids.x;
 				deltaY += boid.y-boids.y;
+				count++;
 			}
 		}
+	}
+	if(count > 0){
+		boid.vx = deltaX*scaling;
+		boid.vy = deltaY*scaling;
 	}
 	return [deltaX, deltaY];
 }
 function seperation(boid){
 	let centerX = 0;
 	let centerY = 0;
-	for(boids in flock){
+	let count = 0;
+	let scaling = 0.01
+	for(let boids of flock){
 		if(boid !== boids){
-			if(dist(boid,boids) < perception*2){
-				centerX = centerX -(boids.x-boid.x);
-				centerY = centerY -(boids.y-boid.y);
+			if(dist(boid,boids) < perception){
+				centerX += (boid.x-boids.x);
+				centerY += (boid.y-boids.y);
+				count++;
 			}
 		}
 	}
-	return [centerX, centerY];
+	if(count > 0){
+		return [centerX*scaling, centerY*scaling];
+	}
+	return [0, 0];
 }
 
 function alignment(boid){
 	let velocityX = 0;
 	let velocityY = 0;
 	let count = 0;
-	for(boids of flock){
+	let scaling = 0.05;
+	for(let boids of flock){
 		if(boid !== boids){
-			if(dist(boid, boids) < perception*2){
+			if(dist(boid, boids) < perception){
 				velocityX += boids.vx;
 				velocityY += boids.vy;
 				count++;
@@ -139,7 +157,7 @@ function alignment(boid){
 	if(count > 0){
 		velocityX = velocityX/count;
 		velocityY = velocityY/count;
-		return [velocityX-boid.vx, velocityY-boid.vy];
+		return [ (velocityX-boid.vx)*scaling, (velocityY-boid.vy)*scaling];
 	}
 	return [0, 0];
 }
@@ -147,7 +165,8 @@ function cohesion(boid){
 	let centerX = 0;
 	let centerY = 0;
 	let count = 0;
-	for(boids of flock){
+	let scaling = 0.05;
+	for(let boids of flock){
 		if(boid !== boids){
 			if(dist(boid,boids) < perception){
 				centerX += boids.x;
@@ -157,17 +176,18 @@ function cohesion(boid){
 		}
 	}
 	if(count > 0){
-		centerX = centerX/ (count-1);
-		centerY = centerY/ (count-1);
-		return[(centerX-boid.x)/100, (centerY-boid.y)/100];
+		centerX = centerX/ count;
+		centerY = centerY/ count;
+		return[ ((centerX-boid.x)/100)*scaling, ((centerY-boid.y)/100)*scaling ];
 	}
 	return [0, 0];
 }
 
-function towardsCenter(boid){
-	let centerX = width/2;
-	let centerY = height/2;
-	return [(centerX-boid.x)/100, (centerY-boid.y)/100];
+function updateBlink(boid){
+	if(boid.blinkCount > 100){
+		boid.blinkCount = 0;
+	}
+	boid.blinkCount++;
 }
 
 function boidDraw(ctx, boid){
@@ -176,18 +196,13 @@ function boidDraw(ctx, boid){
 	ctx.lineWidth = 3;
 	ctx.strokeStyle = "#FF0000";
 	ctx.stroke();
+
 	if(boid.blinkCount > 90){
 		ctx.fillStyle = "#0000FF";
 	}else{
 		ctx.fillStyle = "#FFFFFF";
 	}
 	ctx.fill();
-	//if(boid.blinkCount > 90){
-	//	ctx.fillStyle = "#0000FF";
-	//}else{
-	//	ctx.fillStyle = "#000000";
-	//}
-	//ctx.fill();
 }
 
 function gameLoop(){
@@ -198,17 +213,17 @@ function gameLoop(){
 	let v3 = 0;
 	let v4 = 0;
 	for(let boid of flock){
-		updateVel(boid);
 		v1 = seperation(boid);
 		v2 = alignment(boid);
 		v3 = cohesion(boid);
-		v4 = towardsCenter(boid);
-		boid.vx += v1[0]*0.5 + v2[0] + v3[0] +v4[0];
-		boid.vy += v1[1]*0.5 + v2[1] + v3[1] +v4[1];
-		boid.x = boid.x + boid.vx;
-		boid.y = boid.y + boid.vy;
+		
+		boid.vx += v1[0] + v2[0] + v3[0];
+		boid.vy += v1[1] + v2[1] + v3[1];
+		//updateBlink(boid);
 		edges(boid);
+		updateVel(boid);
 		//boundingBox(boid);
+		
 		boidDraw(ctx,boid);
 	}
 	window.requestAnimationFrame(gameLoop);
