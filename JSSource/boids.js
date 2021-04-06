@@ -16,7 +16,7 @@ class Boid{
 		this.vy = vy;
 		this.ax = ax;
 		this.ay = ay;
-		this.blinkCount = bc;	// Problem is with random initialization...
+		this.blinkCount = bc;
 	}
 	//updateBlink(){
 	//	if(this.blinkCount > 99){
@@ -28,7 +28,7 @@ class Boid{
 
 function init(){
 	for(let i = 0; i<numBoids; i++){
-		flock.push(new Boid(Math.random()*width, Math.random()*height, Math.random()*1-0.5, Math.random()*1-0.5, Math.random()*0.5-0.25, Math.random()*0.5-0.25), Math.floor(Math.random()*101));
+		flock.push(new Boid(Math.random()*width, Math.random()*height, Math.random()*1-0.5, Math.random()*1-0.5, Math.random()*0.5-0.25, Math.random()*0.5-0.25, Math.random()*100) );
 	}
 }
 
@@ -144,7 +144,7 @@ function alignment(boid){
 	let velocityX = 0;
 	let velocityY = 0;
 	let count = 0;
-	let scaling = 0.05;
+	let scaling = 0.1;
 	for(let boids of flock){
 		if(boid !== boids){
 			if(dist(boid, boids) < perception){
@@ -190,6 +190,16 @@ function updateBlink(boid){
 	boid.blinkCount++;
 }
 
+function syncBlink(boid){
+	for(let boids of flock){
+		if(boid !== boids){
+			if(dist(boid, boids) < perception){
+				boid.blinkCount++;
+			}
+		}
+	}
+}
+
 function boidDraw(ctx, boid){
 	ctx.beginPath();
 	ctx.arc(boid.x, boid.y, 5, 0, 2*Math.PI, false);
@@ -197,7 +207,7 @@ function boidDraw(ctx, boid){
 	ctx.strokeStyle = "#FF0000";
 	ctx.stroke();
 
-	if(boid.blinkCount > 90){
+	if(boid.blinkCount > 80){
 		ctx.fillStyle = "#0000FF";
 	}else{
 		ctx.fillStyle = "#FFFFFF";
@@ -211,15 +221,20 @@ function gameLoop(){
 	let v1 = 0;
 	let v2 = 0;
 	let v3 = 0;
-	let v4 = 0;
+	
+	let cohFactor = 1;
+	let aliFactor = 1;
+	let sepFactor = 0.5;
 	for(let boid of flock){
 		v1 = seperation(boid);
 		v2 = alignment(boid);
 		v3 = cohesion(boid);
 		
-		boid.vx += v1[0] + v2[0] + v3[0];
-		boid.vy += v1[1] + v2[1] + v3[1];
-		//updateBlink(boid);
+		boid.vx += v1[0]*sepFactor + v2[0]*aliFactor + v3[0]*cohFactor;
+		boid.vy += v1[1]*sepFactor + v2[1]*aliFactor + v3[1]*cohFactor;
+		
+		updateBlink(boid);
+		syncBlink(boid);	
 		edges(boid);
 		updateVel(boid);
 		//boundingBox(boid);
