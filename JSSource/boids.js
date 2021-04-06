@@ -190,11 +190,11 @@ function h(x){
 
 function syncBlink(boid){
 	let alpha = 0;
-	let eps = 0.5;
+	let eps = 0.7;
 	for(let boids of flock){
 		if(boid !== boids){
-			if(dist(boid, boids) < perception){
-				if(boids.blinkCount == 100){
+			if(dist(boid, boids) < perception*2){
+				if(boids.blinkCount > 80){
 					alpha += 1;
 				}
 			}
@@ -227,7 +227,7 @@ function gameLoop(){
 	
 	let cohFactor = 1.5;
 	let aliFactor = 1;
-	let sepFactor = 0.5;
+	let sepFactor = 0.3;
 	for(let boid of flock){
 		v1 = seperation(boid);
 		v2 = alignment(boid);
