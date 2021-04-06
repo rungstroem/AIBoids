@@ -2,7 +2,7 @@ let width = 800;
 let height = 800;
 
 let numBoids = 30;
-let perception = 20;
+let perception = 30;
 let maxVel = 5;
 let maxAcc = 0.05;
 
@@ -18,12 +18,6 @@ class Boid{
 		this.ay = ay;
 		this.blinkCount = bc;
 	}
-	//updateBlink(){
-	//	if(this.blinkCount > 99){
-	//		this.blinkCount = 0;
-	//	}
-	//	this.blinkCount++;
-	//}
 };
 
 function init(){
@@ -190,14 +184,23 @@ function updateBlink(boid){
 	boid.blinkCount++;
 }
 
+function h(x){
+	return x;
+}
+
 function syncBlink(boid){
+	let alpha = 0;
+	let eps = 0.5;
 	for(let boids of flock){
 		if(boid !== boids){
 			if(dist(boid, boids) < perception){
-				boid.blinkCount++;
+				if(boids.blinkCount == 100){
+					alpha += 1;
+				}
 			}
 		}
 	}
+	boid.blinkCount = boid.blinkCount + 1/100 + eps*alpha*h(boid.blinkCount);
 }
 
 function boidDraw(ctx, boid){
@@ -222,7 +225,7 @@ function gameLoop(){
 	let v2 = 0;
 	let v3 = 0;
 	
-	let cohFactor = 1;
+	let cohFactor = 1.5;
 	let aliFactor = 1;
 	let sepFactor = 0.5;
 	for(let boid of flock){
