@@ -2,7 +2,7 @@ let width = 800;
 let height = 800;
 
 let numBoids = 30;
-let perception = 30;
+let perception = 100;
 let maxVel = 5;
 let maxAcc = 0.05;
 
@@ -129,6 +129,8 @@ function seperation(boid){
 		}
 	}
 	if(count > 0){
+		centerX = centerX/count;
+		centerY = centerY/count;
 		return [centerX*scaling, centerY*scaling];
 	}
 	return [0, 0];
@@ -227,7 +229,7 @@ function gameLoop(){
 	
 	let cohFactor = 1.5;
 	let aliFactor = 1;
-	let sepFactor = 0.3;
+	let sepFactor = 0.1;
 	for(let boid of flock){
 		v1 = seperation(boid);
 		v2 = alignment(boid);
